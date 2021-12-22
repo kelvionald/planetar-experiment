@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Load the Paper.js library -->
+<script type="text/javascript" src="paper-full.js"></script>
+<!-- Define inlined PaperScript associate it with myCanvas -->
+</head>
+<body>
+	<canvas id="myCanvas" width="500" height="500" resize></canvas>
+	
+	<script type="text/paperscript" canvas="myCanvas">
+
+	var path = new Path();
+	path.strokeColor = 'black';
+	path.add(new Point(0, 0)); 
+	path.add(new Point(500, 0)); 
+	path.add(new Point(500, 500));
+	path.add(new Point(0, 500));
+	path.closed = true;
+
+
+	// Create a copy of the path and move it 100pt to the right:
+	//var copy = path.clone();
+	//copy.position.x += 100;
+var r=50;
+	var myCircle = new Path.Circle(new Point(250, 250), r);
+	myCircle.strokeColor = 'black';
+
+	var sput = new Path.Circle(new Point(250+50+30, 250), 1);
+	sput.strokeColor = 'black';
+
+	var angle=0;
+	var center=new Point(250,250);
+
+	var text,text2;
+
+	function onMouseMove(event) {
+		var point = event.point.clone();
+		if(text!=null)
+			text.fillColor = 'white';
+		text = new PointText(new Point(10, 20))
+        text.fillColor = 'black';
+        text.content = "nowPos:"+ point;
+        text.fontSize = '14px';
+        text.fontFamily = "arial";
+	}
+	
+	function onMouseDown(event) {
+		var point = event.point.clone();
+		if(text2!=null)
+			text2.fillColor = 'white';
+		text2 = new PointText(new Point(10, 40))
+        text2.fillColor = 'black';
+        text2.content = "cklick:"+ point;
+        text2.fontSize = '14px';
+        text2.fontFamily = "arial";
+		if((point-myCircle.position).length-r<=5){
+			text2.content = "d";
+		}
+		
+	}
+	
+	setInterval(function(){
+		sput.position.x=center.x+(80*Math.cos(angle));
+		sput.position.y=center.y+(80*Math.sin(angle));
+		
+		angle+=0.08;
+	}, 40);
+	</script>
+</body>
+</html>

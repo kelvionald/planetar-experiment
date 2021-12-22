@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="paper-full.js"></script>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="500" height="500" resize></canvas>
+		
+		<script type="text/paperscript" canvas="myCanvas">
+		var path = new Path();
+		var w=500,h=500;
+		function prtBorder() {
+			path.strokeColor = 'black';
+			path.add(new Point(0, 0));
+			path.add(new Point(w, 0));
+			path.add(new Point(w, h));
+			path.add(new Point(0, h));
+			path.closed = true;
+		}
+		prtBorder();
+
+		var r = 10;
+		var center = new Point(250, 250);
+		var cells = [];
+		var c = 0;
+		var angRot = 2 * Math.PI / 6;
+		var a=Math.floor(r*Math.sqrt(2));
+		var map=[];
+		var wa=Math.floor(w/a),ha=Math.floor(h/a);
+		for(var i=0;i<w+a;i++){
+			map[i]=[];
+			for(var j=0;j<h+a;j++)
+				map[i][j]=-1;
+		}
+		function getCosBetweenVectors(v1,v2){
+			return (v1.x*v2.x+v1.y*v2.y)/(v1.length*v2.length);
+		}
+		function cellsClass(index,pos, r, vel) {
+			this.cell = new Path.Circle(pos, r);
+			this.cell.strokeColor = 'black';
+			this.cell.fillColor = 'white';
+			this.a = Math.floor(this.cell.position.x/a);
+			this.b = Math.floor(this.cell.position.y/a);
+			this.id=c;
+			map[this.a][this.b]=c;
+			this.vel = vel;
+			this.index = index;
+		}
+		function putCell(index,p, r, vel) {
+			cells[c] = new cellsClass(index,p, r, vel);
+			c++;
+		}
+
+		cells[c] = new cellsClass(null,center,r, new Point(0,0));
+		c++;
+		
+		function collision(i,j){
+			var dv=(cells[i].cell.position-cells[j].cell.position);
+			var dl=dv.length;
+			if(dl-r*1.8<1){
+				if(dl!=0){
+					dv/=dl;
+					cells[i].cell.position+=dv;
+					cells[j].cell.position+=-dv;}
+				else{
+					console.log("vision zero");
+				}
+			}
+		}
+		var maxDeviation=0.3;
+		var wind=0;
+		var velocity=6;
+		var path=center;
+		setInterval(function() {
+			//move to mouse
+			if((path-cells[0].cell.position).length-r>2){
+				//cells[0].cell.position+=(path-cells[0].cell.position)/(path-cells[0].cell.position).length*velocity;
+			}
+			for(var i=1;i<c;i++){
+				var len=cells[i].vel.length;
+				var vel=cells[i].cell.position-cells[0].cell.position;
+				console.log(len);
+				vel/=len;
+				vel = new Point(-vel.y,vel.x);
+				cells[i].vel=vel;
+				cells[i].cell.position+=cells[i].vel;
+			}
+			//collision
+			for (var i = 0; i < c; i++) {
+				var mn = Math.floor(cells[i].cell.position.x/a);
+				var mq = Math.floor(cells[i].cell.position.y/a);
+				if(mn!=cells[i].a || mq!=cells[i].b){
+					map[cells[i].a][cells[i].b]=-1;
+					map[mn][mq]=cells[i].id;
+					cells[i].a=mn;
+					cells[i].b=mq;
+				}
+			}
+			for(var i=0;i<c;i++){
+				for(var j=cells[i].a-1;j<cells[i].a+2&&j<wa;j++){
+					for(var k=cells[i].b-1;k<cells[i].b+2&&k<ha;k++){
+						if(map[j][k]!=cells[i].id&&map[j][k]!=-1){
+							collision(i,map[j][k]);
+						}
+					}
+				}
+			}
+		}, 40);
+		var text2;
+		var move = false;
+		var point;
+		function onMouseDown(event) {
+			move = true;
+			path = point;
+		}
+
+		function onMouseUp(event) {
+			move = false;
+			path = point;
+			putCell(0,point,2, new Point(0,2));
+		}
+
+		function onMouseMove(event) {
+			point = event.point.clone();
+			if (text2 != null)
+				text2.fillColor = 'white';
+			text2 = new PointText(new Point(10, 40))
+			text2.fillColor = 'black';
+			text2.content = "cklick:" + point;
+			text2.fontSize = '14px';
+			text2.fontFamily = "arial";
+			if (move) path = point;
+		}
+		</script>
+	</body>
+</html>
